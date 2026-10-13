@@ -1,0 +1,14 @@
+# LangChain core
+langchain
+langchain-core
+langchain-community
+langchain-text-splitters
+
+# LLM providers
+langchain-groq
+
+# Environment variables and API keys
+python-dotenv
+
+#UI
+streamlit
