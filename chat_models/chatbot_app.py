@@ -12,6 +12,7 @@ st.set_page_config(
     layout="centered",
 )
 
+
 # Initialize the model
 @st.cache_resource
 def load_model():
@@ -21,12 +22,11 @@ def load_model():
 model = load_model()
 
 # Prompt template
-prompt = PromptTemplate.from_template(
-    "You are a {role} assistant. "
-    "Respond to the user input accordingly.\n\n"
-    "User: {input}\n"
-    "Assistant:"
-)
+prompt = PromptTemplate.from_template("""
+    You are a {role}. Act according to your role and respond to the user input accordingly.\n\n
+    User: {input}\n
+    Assistant:
+""")
 
 # Initialize session state
 if "messages" not in st.session_state:
@@ -34,6 +34,9 @@ if "messages" not in st.session_state:
 
 if "role" not in st.session_state:
     st.session_state.role = "friendly"
+
+if "role_input" not in st.session_state:
+    st.session_state.role_input = "friendly"
 
 # UI
 st.title("🤖 AI Role-Based Chatbot")
@@ -43,26 +46,28 @@ st.caption("Chat with an AI assistant and customize its personality.")
 with st.sidebar:
     st.header("⚙️ Settings")
 
-    role = st.selectbox(
-        "Choose assistant personality",
-        ["friendly", "sad", "angry"],
-        index=["friendly", "sad", "angry"].index(
-            st.session_state.role
-        ),
+    st.text_input(
+        "Enter the AI assistant's role",
+        key="role_input",
+        placeholder="e.g., friendly, sarcastic, professional",
     )
 
-    if role != st.session_state.role:
-        st.session_state.role = role
-        st.session_state.messages = []
-        st.rerun()
+    if st.button("Set Role", use_container_width=True):
+        new_role = st.session_state.role_input.strip()
 
-    st.info(f"Current personality: **{st.session_state.role.title()}**")
+        if new_role:
+            st.session_state.role = new_role
+            st.session_state.messages = []
+            st.success(f"Role updated to: {new_role}")
+        else:
+            st.warning("Please enter a role.")
+
+    st.info(f"Current role: **{st.session_state.role.title()}**")
 
     if st.button("🗑️ Clear Chat", use_container_width=True):
         st.session_state.messages = []
         st.rerun()
 
-# Display chat history
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
@@ -72,9 +77,7 @@ user_input = st.chat_input("Type your message here...")
 
 if user_input:
     # Display and save user message
-    st.session_state.messages.append(
-        {"role": "user", "content": user_input}
-    )
+    st.session_state.messages.append({"role": "user", "content": user_input})
 
     with st.chat_message("user"):
         st.markdown(user_input)
